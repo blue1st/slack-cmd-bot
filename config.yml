@@ -1,0 +1,5 @@
+Users:
+  - <YOUR EMAIL ADDRESS>
+CmdPattern: ^ls( [^;&]+)?$
+Token: <SLACK BOT TOKEN>
+Debug: false
