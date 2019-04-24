@@ -32,6 +32,8 @@ $ slack-cmd-bot init
 
 ### 実行
 
-PC上でバイナリを起動することでBotを起動する。（実用上はsystemdなどでdaemon化しておくのがおすすめ）
+```bash
+$ slack-cmd-bot -c config.yml
+```
 
 対象となるチャンネルに招待した上で、Botに対してリプライの形でコマンドを投げる。
