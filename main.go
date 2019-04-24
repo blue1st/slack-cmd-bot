@@ -34,28 +34,71 @@ func main() {
 	rootCmd := &cobra.Command{
 		Run: func(c *cobra.Command, args []string) {
 			fmt.Printf("configFile: %s\n", configFile)
+			viper.SetConfigFile(configFile)
+			viper.AutomaticEnv()
+			if err := viper.ReadInConfig(); err != nil {
+				fmt.Println("config file read error")
+				fmt.Println(err)
+				os.Exit(1)
+			}
+			if err := viper.Unmarshal(&config); err != nil {
+				fmt.Println("config file Unmarshal error")
+				fmt.Println(err)
+				os.Exit(1)
+			}
+
+			Start()
 		},
 	}
 	rootCmd.PersistentFlags().StringVarP(&configFile, "config", "c", configFile, "config file path")
-	cobra.OnInitialize(func() {
-		viper.SetConfigFile(configFile)
-		viper.AutomaticEnv()
-		if err := viper.ReadInConfig(); err != nil {
-			fmt.Println("config file read error")
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		if err := viper.Unmarshal(&config); err != nil {
-			fmt.Println("config file Unmarshal error")
-			fmt.Println(err)
-			os.Exit(1)
-		}
-	})
+
+	initCmd := &cobra.Command{
+		Use:   "init",
+		Short: "Create config.yml",
+		Run: func(c *cobra.Command, args []string) {
+			tokenPtn := regexp.MustCompile(`^xoxb-\w{10}-\w{12}-\w{24}$`)
+			var token string
+			for {
+				fmt.Print("Bot User OAuth Access Token ( https://api.slack.com/apps \"App\"->\"Add features and functionality\"->\"Permissions\" ): ")
+				fmt.Scan(&token)
+				if tokenPtn.Match([]byte(token)) {
+					break
+				} else {
+					fmt.Println("invalid token pattern (example: xoxb-XXXXXXXXXX-XXXXXXXXXXXX-XXXXXXXXXXXXXXXXXXXXXXXX)")
+				}
+			}
+			viper.Set("Token", token)
+
+			emailPtn := regexp.MustCompile(`^[a-zA-Z0-9.!#$%&'*+\/=?^_` + "`" + `{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$`)
+			var users []string
+			for {
+				var user string
+				fmt.Print("Slack Users Email Address: ")
+				fmt.Scan(&user)
+				if emailPtn.Match([]byte(user)) {
+					users = append(users, user)
+					break
+				} else {
+					fmt.Println("invalid address pattern")
+				}
+			}
+			viper.Set("Users", users)
+			viper.Set("CmdPattern", "^.*$")
+			if err := viper.WriteConfigAs("config.yml"); err != nil {
+				fmt.Println(err)
+			}
+			fmt.Println("create config.yml")
+		},
+	}
+	rootCmd.AddCommand(initCmd)
+
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+}
 
+func Start() {
 	// 受け付けるコマンドのパターンをコンパイル
 	cmdPattern = regexp.MustCompile(config.CmdPattern)
 
@@ -68,6 +111,9 @@ func main() {
 			continue
 		}
 		users = append(users, user.ID)
+	}
+	if config.Debug {
+		fmt.Println(users)
 	}
 	// Bot開始
 	os.Exit(Run(api))
