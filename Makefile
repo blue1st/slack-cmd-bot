@@ -1,4 +1,9 @@
-default: build
+default: setup build 
+
+setup:
+	go get -v -u \
+		github.com/laher/goxc \
+		github.com/tcnksm/ghr
 
 run:
 	go run main.go -c config.yml
@@ -6,13 +11,7 @@ run:
 build:
 	go build
 
-build-mac:
-	GOOS=darwin GOARCH=amd64 go build
+deploy:
+	script/release
 
-build-win:
-	GOOS=windows GOARCH=amd64 go build
-
-build-linux:
-	GOOS=linux GOARCH=amd64 go build
-
-.PHONY: run build build-mac build-win build-linux
+.PHONY: run 
