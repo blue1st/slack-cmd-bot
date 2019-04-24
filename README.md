@@ -2,13 +2,13 @@
 
 ## 使用方法
 
-### バイナリの作成
-
-Go 1.12以上の環境を整えた上で
+### インストール
 
 ```bash
-$ make
+$ go get github.com/blue1st/slack-cmd-bot 
 ```
+
+もしくはリリースページからバイナリをダウンロード。
 
 ### SlackのBotトークンを取得
 
@@ -18,7 +18,13 @@ https://api.slack.com/apps にアクセスして"Create a new app"よりアプ�
 
 また、"Install your app to your workspace"項の"Install App"ボタンを押して自身のSlack Workspaceに追加する。
 
-### config.ymlの記述
+### config.ymlの生成
+
+initコマンドで先のトークン及び対象とするユーザを入力することでカレントディレクトリにconfig.ymlを生成する。
+ 
+```bash
+$ slack-cmd-bot init
+```
 
 * 先に取得したトークンを`Token`項に記述
 * Botへのコマンド送信を許可するSlackユーザのEmailアドレスを`Users`項に列挙
